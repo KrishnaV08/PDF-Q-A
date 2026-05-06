@@ -1,23 +1,22 @@
-import { Router } from 'express';
-import { answerQuestion } from '../services/rag.service.js';
-import { generateSummary } from '../services/rag.service.js';
+import { Router } from "express";
+import { answerQuestion } from "../agents/rag.service.js";
+import { generateSummary } from "../agents/rag.service.js";
 
 const router = Router();
 
-
-router.post('/ask', async (req, res) => {
+router.post("/ask", async (req, res) => {
   const { question, topK = 3 } = req.body;
 
-  if (!question || question.trim() === '') {
+  if (!question || question.trim() === "") {
     return res.status(400).json({
-      error: 'Question is required',
-      example: { question: 'What is this document about?' }
+      error: "Question is required",
+      example: { question: "What is this document about?" },
     });
   }
 
-  if (typeof question !== 'string' || question.length > 500) {
+  if (typeof question !== "string" || question.length > 500) {
     return res.status(400).json({
-      error: 'Question must be a string under 500 characters'
+      error: "Question must be a string under 500 characters",
     });
   }
 
@@ -36,23 +35,21 @@ router.post('/ask', async (req, res) => {
       },
       sources: sourceChunks,
     });
-
   } catch (error) {
-    if (error.message.includes('No documents loaded')) {
+    if (error.message.includes("No documents loaded")) {
       return res.status(400).json({
-        error: 'No PDF loaded',
-        message: 'Please upload a PDF first via POST /api/pdf/upload'
+        error: "No PDF loaded",
+        message: "Please upload a PDF first via POST /api/pdf/upload",
       });
     }
     res.status(500).json({
-      error: 'Failed to answer question',
-      details: error.message
+      error: "Failed to answer question",
+      details: error.message,
     });
   }
 });
 
-
-router.post('/summarize', async (req, res) => {
+router.post("/summarize", async (req, res) => {
   try {
     const startTime = Date.now();
     const summary = await generateSummary();
@@ -62,19 +59,18 @@ router.post('/summarize', async (req, res) => {
       summary,
       metadata: {
         responseTimeMs: Date.now() - startTime,
-      }
+      },
     });
-
   } catch (error) {
-    if (error.message.includes('No documents loaded')) {
+    if (error.message.includes("No documents loaded")) {
       return res.status(400).json({
-        error: 'No PDF loaded',
-        message: 'Please upload a PDF first via POST /api/pdf/upload'
+        error: "No PDF loaded",
+        message: "Please upload a PDF first via POST /api/pdf/upload",
       });
     }
     res.status(500).json({
-      error: 'Failed to generate summary',
-      details: error.message
+      error: "Failed to generate summary",
+      details: error.message,
     });
   }
 });
